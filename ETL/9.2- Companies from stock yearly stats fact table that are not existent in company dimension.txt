@@ -1,0 +1,9 @@
+declare 
+cursor companies is select distinct SYF.COMPANY_KEY
+from stock_yearly_stats_fact   SYF 
+where SYF.COMPANY_KEY not in (select company_key from company_dim); 
+begin
+for R in companies loop 
+insert into company_dim (COMPANY_DIM.COMPANY_KEY) values (R.company_key);
+end loop; 
+end;

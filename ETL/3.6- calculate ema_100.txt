@@ -1,0 +1,73 @@
+CREATE OR REPLACE procedure set_EMA_100 (V_company_key varchar2) 
+
+as 
+
+cursor stock_daily is 
+select * from stock_daily_stats_fact where company_key = V_company_key 
+order by date_key;
+
+first_date date; 
+date_to_start date; 
+
+counter_ number    :=0;  
+prev_EMA number (20,5) ; 
+V_EMA number     (30,10); 
+SMA number         (30,10); 
+multiplier number (20,5); 
+
+time_period number := 99; 
+
+
+
+begin 
+
+multiplier := 2 /(time_period+1);
+
+DBMS_OUTPUT.PUT_LINE(multiplier); 
+
+for R in stock_daily loop 
+
+if counter_ < time_period then 
+
+if counter_ = 0  then 
+first_date := R.date_key; 
+end if; 
+
+counter_ := counter_ +1; 
+continue; 
+
+end if;
+
+if counter_ = time_period   then 
+counter_ := counter_ +1; 
+
+date_to_start := R.date_key; 
+SMA := GET_SMAVG_BETWEEN (first_date , date_to_start , V_company_key); 
+DBMS_OUTPUT.PUT_LINE(SMA); 
+prev_EMA := SMA; 
+
+V_EMA :=  prev_EMA; 
+
+update stock_daily_stats_fact set STOCK_DAILY_STATS_FACT.EMA_100 = V_EMA 
+where date_key = R.date_key 
+and 
+company_key = V_company_key; 
+
+continue; 
+
+end if; 
+
+
+
+V_EMA := (R.close * multiplier) - (Prev_EMA * multiplier) + PRev_EMA; 
+
+prev_EMA := V_EMA; 
+
+update stock_daily_stats_fact set STOCK_DAILY_STATS_FACT.EMA_100 = V_EMA 
+where date_key = R.date_key 
+and 
+company_key = V_company_key; 
+
+end loop;
+
+end;

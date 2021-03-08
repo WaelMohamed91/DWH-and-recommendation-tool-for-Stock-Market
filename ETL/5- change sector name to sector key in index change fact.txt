@@ -1,0 +1,60 @@
+declare 
+
+V_sector_key number;
+V_sector_name varchar2 (100); 
+
+sector_error varchar2 (100); 
+counter_ number :=0;  
+counter_2 number :=0;
+
+cursor index_fact is 
+select date_key , company_added_key from index_change_fact;
+  
+
+begin 
+
+for R in index_fact loop 
+
+-- Check if Company Key Exist In company _ dim or not 
+
+select count (*) 
+into counter_2 
+from company_dim 
+where 
+COMPANY_KEY= R.Company_added_key;
+
+if counter_2 = 0 then 
+counter_2 := 0; 
+continue; 
+end if; 
+
+-- Get sector name from Company dimension 
+select CMP.SECTOR
+into V_sector_name
+from company_dim cmp 
+where 
+CMP.COMPANY_KEY= R.Company_added_key;
+
+-- use sector name to get indsury key from sector dimension 
+select ind.sector_key  
+into v_sector_key 
+from sector_dim ind
+where IND.sector_NAME = v_sector_name;
+ 
+-- set sector Key for All Rows .. 
+update  index_change_fact 
+set INDEX_CHANGE_FACT.COMPANY_ADDED_SECTOR_KEY =  v_sector_key
+where 
+index_change_fact.DATE_KEY = R.Date_key 
+and 
+INDEX_CHANGE_FACT.COMPANY_ADDED_KEY = R.company_added_key; 
+ 
+
+end loop; 
+
+exception 
+when NO_data_found then 
+DBMS_OUTPUT.PUT_LINE(V_sector_name);
+DBMS_OUTPUT.PUT_LINE(counter_);
+
+end;  

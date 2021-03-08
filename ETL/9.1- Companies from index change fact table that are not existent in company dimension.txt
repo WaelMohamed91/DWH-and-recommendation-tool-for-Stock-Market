@@ -1,0 +1,18 @@
+declare 
+cursor companies_added  is select distinct SYF.COMPANY_ADDED_KEY , SYF.COMPANY_REMOVED_KEY
+from index_change_fact  SYF 
+where SYF.COMPANY_ADDED_KEY not in (select company_key from company_dim); 
+
+cursor companies_Removed  is select distinct  SYF.COMPANY_REMOVED_KEY
+from index_change_fact  SYF 
+where SYF.COMPANY_REMOVED_KEY not in (select company_key from company_dim); 
+ 
+begin
+for R in companies_added loop 
+insert into company_dim (COMPANY_DIM.COMPANY_KEY) values (R.company_added_key);
+end loop; 
+
+for R in companies_Removed  loop 
+insert into company_dim (COMPANY_DIM.COMPANY_KEY) values (R.COMPANY_REMOVED_KEY);
+end loop; 
+end; 

@@ -1,0 +1,23 @@
+-- Creating a sequence so that it can be used as a primary key
+CREATE SEQUENCE sub_industry_seq
+  MINVALUE 1
+  MAXVALUE 99999
+  START WITH 1
+  INCREMENT BY 1;
+
+-- Populating
+declare 
+industry_key integer; 
+cursor unique_subIndustries is  
+select distinct sector , sub_industry from company_dim , industry_dim 
+where COMPANY_DIM.SECTOR =INDUSTRY_DIM.INDUSTRY_NAME; 
+begin 
+for R in unique_subIndustries loop 
+select INDUSTRY_DIM.INDUSTRY_KEY
+into industry_key
+from INDUSTRY_DIM
+where INDUSTRY_DIM.INDUSTRY_NAME = R.sector;
+insert into sub_industry_dim values 
+(sub_industry_seq.nextval , industry_key , R.sub_industry); 
+end loop; 
+end;

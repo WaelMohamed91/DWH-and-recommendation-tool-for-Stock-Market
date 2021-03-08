@@ -1,0 +1,27 @@
+CREATE OR REPLACE procedure Calculate_Field (V_Field_Name varchar2) 
+as 
+cursor companies is select distinct company_key from stock_daily_stats_fact; 
+begin 
+for Cmp in Companies loop 
+if V_Field_Name = 'MOM' then 
+set_MOM(cmp.company_key);
+elsif  V_Field_Name = 'MOM2' then 
+set_MOM2(cmp.company_key);
+
+elsif V_Field_Name = 'EMA_50' then 
+set_EMA_50 (cmp.company_key);
+
+elsif V_Field_Name = 'EMA_100' then  
+set_EMA_100 (cmp.company_key);
+
+elsif V_Field_Name ='EMA_200' then 
+set_EMA_200 (CMP.company_key);
+
+elsif V_Field_Name ='EMA_10' then 
+set_EMA_10 (CMP.company_key);
+
+elsif V_Field_Name ='EMA_20' then 
+set_EMA_20 (CMP.company_key);
+end if; 
+commit; 
+end loop;
